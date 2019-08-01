@@ -16,7 +16,7 @@ public class CommonConstant {
    public static final String TABLE_FRIEND_LIST = "friendlist";
    
    public static final String IMAGE_PATH = "D:\\VirtualDirectory\\image\\";
-   public static final String HOST = "http://172.16.169.97:8080/";
+   public static final String HOST = "http://192.168.31.32:8080/";
    
    public static final String IDENTITY_REQUEST = "Who you are ?";
    public static final String ACCEPT = "Socket created !";

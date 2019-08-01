@@ -4,7 +4,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/SocketConnection.java</file>
+            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderfulchat/WonderfulChat.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/Startup.java</file>
+            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderfulchat/ServletOnly.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/CommonConstant/CommonConstant.java</file>
         </group>
     </open-files>

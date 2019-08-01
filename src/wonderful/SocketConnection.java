@@ -60,9 +60,15 @@ public class SocketConnection implements Runnable{
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
             initOk = false;
             try {
-                socket.close();
-                reader.close();
-                writer.close();
+                if(socket != null){
+                    socket.close();
+                }
+                if(reader != null){
+                    reader.close();
+                }
+                if(writer != null){
+                    writer.close();
+                }
                 this.hashMap = null;
             } catch (IOException ex1) {
                 Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex1);
@@ -141,10 +147,18 @@ public class SocketConnection implements Runnable{
             sendMessage(MessageType.ERROR,ex.getMessage());
         }finally{
             try {
-                socket.close();
-                reader.close();
-                writer.close();
-                hashMap.remove(hashMapKey);
+                if(socket != null){
+                    socket.close();
+                }
+                if(reader != null){
+                    reader.close();
+                }
+                if(writer != null){
+                    writer.close();
+                }
+                if(hashMap != null){
+                   hashMap.remove(hashMapKey); 
+                }
                 hashMap = null;
                 friendSocket = null;
             } catch (IOException ex) {
@@ -153,13 +167,13 @@ public class SocketConnection implements Runnable{
         }
     }
     
-    public void sendMessage(String message){
-        try {
-            writer.write(message);
-        } catch (IOException ex) {
-            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    public void sendMessage(String message){
+//        try {
+//            writer.write(message + "\n");
+//        } catch (IOException ex) {
+//            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
     
     private void saveMessage(){
         
@@ -185,7 +199,7 @@ public class SocketConnection implements Runnable{
             messageModel.setMessage(message);
             String answer = gson.toJson(messageModel);
         try {
-            writer.write(answer);
+            writer.write(answer + "\n");
             writer.flush();
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
@@ -201,7 +215,7 @@ public class SocketConnection implements Runnable{
             messageModel.setMessage(message);
             String messageData = gson.toJson(messageModel);
         try {
-            writer.write(messageData);
+            writer.write(messageData + "\n");
             writer.flush();
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);

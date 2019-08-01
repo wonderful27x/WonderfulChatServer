@@ -7,9 +7,8 @@ package wonderful;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +21,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import wonderfulchat.ServletOnly;
 
 /**
  *
@@ -36,13 +38,29 @@ public class Startup extends HttpServlet{
     @Override
     public void init(ServletConfig sc) throws ServletException {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	ServletContext context = getServletContext();//全局Context,可以用来共享数据
+	//ServletContext context = getServletContext();//全局Context,可以用来共享数据
         startServer();
     }
 
     @Override
-    public void service(ServletRequest sr, ServletResponse sr1) throws ServletException, IOException {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void doPost(HttpServletRequest request, HttpServletResponse response){
+        
+        PrintWriter out = null;
+        response.setContentType("text/plain; charset=utf-8");
+        response.setCharacterEncoding("UTF-8");
+        
+        try {
+            out = response.getWriter();
+            out.print("Have a wonderful day !");
+        } catch (IOException ex) {
+            Logger.getLogger(ServletOnly.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response){
+        doPost(request,response);
     }
 
     @Override
@@ -51,8 +69,12 @@ public class Startup extends HttpServlet{
             for(SocketConnection connection:hashMap.values()){
                 connection.stop();
             }
-            threadPool.shutdown();
-            serverSocket.close();
+            if(threadPool != null){
+               threadPool.shutdown(); 
+            }
+            if(serverSocket != null){
+               serverSocket.close(); 
+            }
             hashMap = null;
             threadPool = null;
             serverSocket = null;
@@ -64,7 +86,7 @@ public class Startup extends HttpServlet{
     //初始化
     private void startServer(){
         try {
-            threadPool = new ThreadPoolExecutor(0,100000,60L,TimeUnit.SECONDS,new SynchronousQueue<>(),new ThreadFactoryOfMine());
+            threadPool = new ThreadPoolExecutor(0,200000,60L,TimeUnit.SECONDS,new SynchronousQueue<>(),new ThreadFactoryOfMine());
             hashMap = new ConcurrentHashMap<>();
             serverSocket = new ServerSocket(8888);
         } catch (IOException ex) {
