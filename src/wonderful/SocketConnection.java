@@ -132,7 +132,7 @@ public class SocketConnection implements Runnable{
                         if(friendSocket == null){
                             saveMessage();
                         }else{
-                            friendSocket.sendMessage(MessageType.MESSAGE_RECEIVE,messageModel.getSender(),messageModel.getReceiver(),messageModel.getMessage());
+                            friendSocket.sendMessage(MessageType.MESSAGE_RECEIVE,messageModel.getSenderAccount(),messageModel.getReceiverAccount(),messageModel.getMessage());
                         }
                         break;
                     default:
@@ -209,8 +209,8 @@ public class SocketConnection implements Runnable{
     private void sendMessage(MessageType type,String sender,String receiver,String message){
             MessageModel messageModel = new MessageModel();
             messageModel.setType(type.getCode());
-            messageModel.setSender(sender);
-            messageModel.setReceiver(receiver);
+            messageModel.setSenderAccount(sender);
+            messageModel.setReceiverAccount(receiver);
             messageModel.setSenderImage(imageUrl);
             messageModel.setMessage(message);
             String messageData = gson.toJson(messageModel);
