@@ -38,6 +38,7 @@ public class SocketConnection implements Runnable{
     private String hashMapKey;
     private ConcurrentHashMap<String,SocketConnection> hashMap;
     private SocketConnection friendSocket;
+    private String friendSocketKey;
     private Gson gson;
     private boolean identityPass;
     private boolean initOk;
@@ -126,8 +127,8 @@ public class SocketConnection implements Runnable{
                             return;
                         }
                         if(friendSocket == null){
-                            String key = messageModel.getReceiverAccount() + "$" + messageModel.getSenderAccount();
-                            friendSocket = hashMap.get(key);
+                            friendSocketKey = messageModel.getReceiverAccount() + "$" + messageModel.getSenderAccount();
+                            friendSocket = hashMap.get(friendSocketKey);
                         }
                         if(friendSocket == null){
                             saveMessage();
@@ -147,6 +148,8 @@ public class SocketConnection implements Runnable{
             sendMessage(MessageType.ERROR,ex.getMessage());
         }finally{
             try {
+                hashMap.get(friendSocketKey).resetFriendSocket();
+                
                 if(socket != null){
                     socket.close();
                 }
@@ -193,8 +196,8 @@ public class SocketConnection implements Runnable{
     private void sendMessage(MessageType type,String message){
             MessageModel messageModel = new MessageModel();
             messageModel.setType(type.getCode());
-            messageModel.setSender("server");
-            messageModel.setReceiver("client");
+            messageModel.setSenderAccount("server");
+            messageModel.setReceiverAccount("client");
             messageModel.setSenderImage(imageUrl);
             messageModel.setMessage(message);
             String answer = gson.toJson(messageModel);
@@ -222,8 +225,13 @@ public class SocketConnection implements Runnable{
         }
     }
     
+    public void resetFriendSocket(){
+        friendSocket = null;
+    }
+    
     public void stop(){
         running = false;
+        this.stop();
     }
     
 }
