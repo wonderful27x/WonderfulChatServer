@@ -148,7 +148,13 @@ public class SocketConnection implements Runnable{
             sendMessage(MessageType.ERROR,ex.getMessage());
         }finally{
             try {
-                hashMap.get(friendSocketKey).resetFriendSocket();
+                SocketConnection connection = null;
+                if(friendSocketKey != null && !friendSocketKey.isEmpty()){
+                    connection = hashMap.get(friendSocketKey);
+                }
+                if(connection != null){
+                    connection.resetFriendSocket();
+                }
                 
                 if(socket != null){
                     socket.close();

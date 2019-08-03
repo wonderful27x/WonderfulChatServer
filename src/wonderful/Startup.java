@@ -33,6 +33,7 @@ public class Startup extends HttpServlet{
     private ServerSocket serverSocket;
     private ConcurrentHashMap<String,SocketConnection> hashMap;
     private ThreadPoolExecutor threadPool;
+    private boolean runPermit;
     
     @Override
     public void init(ServletConfig sc) throws ServletException {
@@ -50,7 +51,10 @@ public class Startup extends HttpServlet{
         
         try {
             out = response.getWriter();
-            out.print("Have a wonderful day !");
+            out.println("Have a wonderful day !");
+            out.println("hashMap size：" + hashMap.size());
+            out.println("threadPool size：" + threadPool.getPoolSize());
+            out.println("thread number：" + threadPool.getActiveCount());
         } catch (IOException ex) {
             Logger.getLogger(ServletOnly.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -65,6 +69,7 @@ public class Startup extends HttpServlet{
     @Override
     public void destroy() {
         try {
+            runPermit = false;
             for(SocketConnection connection:hashMap.values()){
                 connection.stop();
             }
@@ -85,6 +90,7 @@ public class Startup extends HttpServlet{
     //初始化
     private void startServer(){
         try {
+            runPermit = true;
             threadPool = new ThreadPoolExecutor(0,200000,60L,TimeUnit.SECONDS,new SynchronousQueue<>(),new ThreadFactoryOfMine());
             hashMap = new ConcurrentHashMap<>();
             serverSocket = new ServerSocket(8888);
@@ -99,8 +105,9 @@ public class Startup extends HttpServlet{
         @Override
         public void run(){
             try {
-                while(true){
+                while(runPermit){
                     Socket socket = serverSocket.accept();
+                    if(!runPermit)return;
                     SocketConnection connection = new SocketConnection(socket,hashMap);
                     threadPool.execute(connection);
                 }
