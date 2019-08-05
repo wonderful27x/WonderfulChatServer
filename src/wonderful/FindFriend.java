@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +30,7 @@ import utils.DBCPUtils;
  */
 public class FindFriend extends HttpServlet{
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
         PrintWriter out = null;
         Connection connection = null;
@@ -40,6 +40,7 @@ public class FindFriend extends HttpServlet{
         HttpUserModel httpUserModel = new HttpUserModel();
         List<UserModel> users = new ArrayList();
         UserModel userModel = new UserModel();
+        Gson gson = new Gson();
         
         try {
             response.setContentType("text/javascript; charset=utf-8");
@@ -64,14 +65,23 @@ public class FindFriend extends HttpServlet{
             httpUserModel.setContent(users);
             httpUserModel.setResult("success");
             
-            Gson gson = new Gson();
             String responseJson = gson.toJson(httpUserModel);
             out.print(responseJson);
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                httpUserModel.setResult("error");
+                httpUserModel.setMessage("error: " + ex.getMessage());
+                String responseJson = gson.toJson(httpUserModel);
+                out.print(responseJson);
+            }
             Logger.getLogger(FindFriend.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                httpUserModel.setResult("error");
+                httpUserModel.setMessage("error: " + ex.getMessage());
+                String responseJson = gson.toJson(httpUserModel);
+                out.print(responseJson);
+            }
             Logger.getLogger(FindFriend.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);
@@ -81,6 +91,7 @@ public class FindFriend extends HttpServlet{
         }
     }
 
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
 
     }

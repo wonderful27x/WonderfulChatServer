@@ -26,6 +26,7 @@ import utils.DBCPUtils;
  */
 public class ChangePassword extends HttpServlet {
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
     {
@@ -40,6 +41,7 @@ public class ChangePassword extends HttpServlet {
 
     }
 
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
         PrintWriter out = null;
         Connection connection = null;
@@ -81,10 +83,14 @@ public class ChangePassword extends HttpServlet {
             }
 
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(ChangePassword.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(ChangePassword.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);

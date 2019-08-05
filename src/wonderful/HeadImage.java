@@ -30,6 +30,7 @@ import utils.DBCPUtils;
  */
 public class HeadImage extends HttpServlet {
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
     {
@@ -42,6 +43,7 @@ public class HeadImage extends HttpServlet {
 
     }
     
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
         Connection connection = null;
         Statement statement = null;
@@ -91,13 +93,19 @@ public class HeadImage extends HttpServlet {
             }
                     
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(HeadImage.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Base64DecodingException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(HeadImage.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(HeadImage.class.getName()).log(Level.SEVERE, null, ex);
         }finally{
             if(out != null){

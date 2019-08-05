@@ -72,10 +72,14 @@ public class Register extends HttpServlet{
             }
             
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);

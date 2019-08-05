@@ -6,21 +6,17 @@
 package wonderful;
 
 import CommonConstant.CommonConstant;
-import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.HttpUserModel;
 import model.UserModel;
 import utils.DBCPUtils;
 
@@ -30,6 +26,7 @@ import utils.DBCPUtils;
  */
 public class AddFriend extends HttpServlet{
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
         PrintWriter out = null;
         Connection connection = null;
@@ -85,10 +82,14 @@ public class AddFriend extends HttpServlet{
             }
             
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                out.print(ex.getMessage());
+            }
             Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);
@@ -98,6 +99,7 @@ public class AddFriend extends HttpServlet{
         }
     }
 
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
 
     }

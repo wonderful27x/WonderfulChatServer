@@ -30,6 +30,7 @@ import utils.DBCPUtils;
  */
 public class GetFriendList extends HttpServlet{
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
         PrintWriter out = null;
         Connection connection = null;
@@ -39,7 +40,7 @@ public class GetFriendList extends HttpServlet{
         HttpUserModel httpUserModel = new HttpUserModel();
         List<UserModel> users = new ArrayList();
         UserModel userModel;
-        
+        Gson gson = new Gson();
         try {
             response.setContentType("text/javascript; charset=utf-8");
             response.setCharacterEncoding("UTF-8");
@@ -65,14 +66,23 @@ public class GetFriendList extends HttpServlet{
             httpUserModel.setContent(users);
             httpUserModel.setResult("success");
             
-            Gson gson = new Gson();
             String responseJson = gson.toJson(httpUserModel);
             out.print(responseJson);
         } catch (IOException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                httpUserModel.setResult("error");
+                httpUserModel.setMessage("error: " + ex.getMessage());
+                String responseJson = gson.toJson(httpUserModel);
+                out.print(responseJson);
+            }
             Logger.getLogger(GetFriendList.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            out.print(ex.toString());
+            if(out != null){
+                httpUserModel.setResult("error");
+                httpUserModel.setMessage("error: " + ex.getMessage());
+                String responseJson = gson.toJson(httpUserModel);
+                out.print(responseJson);
+            }
             Logger.getLogger(GetFriendList.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);
@@ -82,6 +92,7 @@ public class GetFriendList extends HttpServlet{
         }
     }
 
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
 
     }
