@@ -59,7 +59,7 @@ public class Startup extends HttpServlet{
         
         try {
             out = response.getWriter();
-            out.println("Have a wonderful day !");
+            out.println("Have a wonderful day !" + "\n");
             out.println("hashMap size：" + hashMap.size());
             out.println("threadPool size：" + threadPool.getPoolSize());
             out.println("thread number：" + threadPool.getActiveCount());

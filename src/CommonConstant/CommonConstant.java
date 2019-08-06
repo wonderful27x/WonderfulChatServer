@@ -22,4 +22,5 @@ public class CommonConstant {
    public static final String IDENTITY_REQUEST = "Who you are ?";
    public static final String ACCEPT = "Socket created !";
    public static final String REFUSE = "Unknown identity !";
+   public static final String REFUSE_FRIEND = "You are not friends !";
 }

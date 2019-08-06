@@ -52,6 +52,7 @@ public class SocketConnection implements Runnable{
     private String friendSocketKey;
     private Gson gson;
     private boolean identityPass;
+    private boolean friendsCheck;
     private boolean initOk;
     private boolean running;
     private String imageUrl;
@@ -62,14 +63,15 @@ public class SocketConnection implements Runnable{
         this.socket = socket;
         this.hashMap = hashMap;
         identityPass = false;
+        friendsCheck = false;
         gson = new Gson();
         initOk = true;
         running = true;
         try {
             InputStream input = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
-            reader = new BufferedReader(new InputStreamReader(input));
-            writer = new BufferedWriter(new OutputStreamWriter(out));
+            reader = new BufferedReader(new InputStreamReader(input,"UTF-8"));
+            writer = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
             initOk = false;
@@ -104,24 +106,36 @@ public class SocketConnection implements Runnable{
                 messageModel = gson.fromJson(message, MessageModel.class);
                 switch(MessageType.getByValue(messageModel.getType())){
                     case ANSWER:
-                        String account = messageModel.getMessage();
+                        String anserMessage = messageModel.getMessage();
+                        String[] account = anserMessage.split("\\$");
                         Connection connection = DBCPUtils.getConnection();
                         Statement statement = connection.createStatement();
-                        String sql = buildSql(account);
+                        
+                        String sql = buildSqlIdentity(account[0]);
                         ResultSet result = statement.executeQuery(sql);
                         if(result.next()){
                             String accountSql = result.getString("account");
                             int state = result.getInt("loginstate");
-                            if(account.equals(accountSql) && state == 1){
+                            if(account[0].equals(accountSql) && state == 1){
                                 imageUrl = result.getString("imageurl");
                                 identityPass = true;
                             }
                         }
+                        
+                        sql = buildSqlFriend(account[0],account[1]);
+                        result = statement.executeQuery(sql);
+                        if(result.next()){
+                            friendsCheck = true;
+                        }
+                        
                         DBCPUtils.closeAll(result, statement, connection);
-                        if(identityPass){
+                        if(identityPass && friendsCheck){
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.ACCEPT);
-                        }else{
+                        }else if(!identityPass){
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
+                            return;
+                        }else if(!friendsCheck){
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE_FRIEND);
                             return;
                         }
                         break;
@@ -277,11 +291,24 @@ public class SocketConnection implements Runnable{
         }
     }
     
-    private String buildSql(String account){
+    private String buildSqlIdentity(String account){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("select * from ");
         stringBuilder.append(CommonConstant.TABLE_USER);
         stringBuilder.append(" where account = '");
+        stringBuilder.append(account);
+        stringBuilder.append("'");
+        
+        return stringBuilder.toString();
+    }
+    
+    private String buildSqlFriend(String account,String friendAccount){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("select * from ");
+        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
+        stringBuilder.append(" where foreignkey = '");
+        stringBuilder.append(friendAccount);
+        stringBuilder.append(" 'and account = '");
         stringBuilder.append(account);
         stringBuilder.append("'");
         
