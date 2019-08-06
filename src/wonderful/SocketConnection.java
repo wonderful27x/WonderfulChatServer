@@ -10,9 +10,14 @@ import CommonConstant.MessageType;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
@@ -20,9 +25,15 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
 import model.MessageModel;
 import utils.DBCPUtils;
 
@@ -44,8 +55,10 @@ public class SocketConnection implements Runnable{
     private boolean initOk;
     private boolean running;
     private String imageUrl;
+    private ServletContext context;
     
-    public SocketConnection(Socket socket,ConcurrentHashMap<String,SocketConnection> hashMap){
+    public SocketConnection(ServletContext context,Socket socket,ConcurrentHashMap<String,SocketConnection> hashMap){
+        this.context = context;
         this.socket = socket;
         this.hashMap = hashMap;
         identityPass = false;
@@ -71,6 +84,7 @@ public class SocketConnection implements Runnable{
                     writer.close();
                 }
                 this.hashMap = null;
+                this.context = null;
             } catch (IOException ex1) {
                 Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex1);
             }
@@ -84,7 +98,7 @@ public class SocketConnection implements Runnable{
         MessageModel messageModel;
         try {
             //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            sendMessage(MessageType.ANSWER,CommonConstant.IDENTITY_REQUEST);
+            sendMessageToClient(MessageType.ANSWER,CommonConstant.IDENTITY_REQUEST);
             while(running && (message = reader.readLine()) != null){
                 if(!running)return;
                 messageModel = gson.fromJson(message, MessageModel.class);
@@ -105,15 +119,15 @@ public class SocketConnection implements Runnable{
                         }
                         DBCPUtils.closeAll(result, statement, connection);
                         if(identityPass){
-                            sendMessage(MessageType.ANSWER,CommonConstant.ACCEPT);
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.ACCEPT);
                         }else{
-                            sendMessage(MessageType.ANSWER,CommonConstant.REFUSE);
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
                             return;
                         }
                         break;
                     case SOCKET_KEY:
                         if(!identityPass){
-                            sendMessage(MessageType.ANSWER,CommonConstant.REFUSE);
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
                             return;
                         }
                         hashMapKey = messageModel.getMessage();
@@ -123,7 +137,7 @@ public class SocketConnection implements Runnable{
                         return;
                     case MESSAGE_SEND:
                         if(!identityPass){
-                            sendMessage(MessageType.ANSWER,CommonConstant.REFUSE);
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
                             return;
                         }
                         if(friendSocket == null){
@@ -131,9 +145,9 @@ public class SocketConnection implements Runnable{
                             friendSocket = hashMap.get(friendSocketKey);
                         }
                         if(friendSocket == null){
-                            saveMessage();
+                            saveMessage(messageModel);
                         }else{
-                            friendSocket.sendMessage(MessageType.MESSAGE_RECEIVE,messageModel.getSenderAccount(),messageModel.getReceiverAccount(),messageModel.getMessage());
+                            friendSocket.sendMessageToFriend(messageModel);
                         }
                         break;
                     default:
@@ -142,10 +156,10 @@ public class SocketConnection implements Runnable{
             }
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
-            sendMessage(MessageType.ERROR,ex.getMessage());
+            sendMessageToClient(MessageType.ERROR,ex.getMessage());
         } catch (SQLException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
-            sendMessage(MessageType.ERROR,ex.getMessage());
+            sendMessageToClient(MessageType.ERROR,ex.getMessage());
         }finally{
             try {
                 SocketConnection connection = null;
@@ -170,22 +184,97 @@ public class SocketConnection implements Runnable{
                 }
                 hashMap = null;
                 friendSocket = null;
+                context = null;
             } catch (IOException ex) {
                 Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
     
-//    public void sendMessage(String message){
-//        try {
-//            writer.write(message + "\n");
-//        } catch (IOException ex) {
-//            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-    
-    private void saveMessage(){
+    private void saveMessage(MessageModel messageModel){
+        if(hashMapKey == null)return;
+        String[] key = hashMapKey.split("\\$");
+        ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);
+        File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");
         
+        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
+        messageModel.setSenderImage(imageUrl);
+        List<MessageModel> messageList;
+        if(lock == null){
+            lock = new ReentrantReadWriteLock();
+        }
+        try {
+            lock.readLock().lock();
+            context.setAttribute(key[1],lock);
+            messageList = readObject(file);
+            messageList.add(messageModel);
+            saveObject(file,messageList);
+        }finally{
+            lock.readLock().unlock();
+            context.removeAttribute(key[1]);
+        }
+    }
+    
+    private List<MessageModel> readObject(File file) {
+        if(file == null || !file.exists() || file.length() <=0){
+            return new ArrayList();
+        }
+    	List<MessageModel> object = null;
+        ObjectInputStream inputStream = null;
+        try {
+            inputStream = new ObjectInputStream(new FileInputStream(file));
+            object = (List<MessageModel>) inputStream.readObject();
+            if(object == null){
+                return new ArrayList();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, e);
+            return new ArrayList();
+        }finally{
+                try {
+                    if(inputStream != null){
+                        inputStream.close();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
+                }
+        }
+        return object;
+    }
+    
+    private File createFile(String directory,String name) {
+            File fileDir = new File(directory);
+            if(!fileDir.exists()){
+                fileDir.mkdirs();
+            }
+            File file = new File(fileDir,name);
+            if(!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, e);
+                }
+            }
+            return file;
+    }
+    
+    private void saveObject(File file,Object object) {
+        ObjectOutputStream outputStream = null;
+        try {
+            outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(object);
+        } catch (IOException e) {
+            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, e);
+        }finally{
+            try {
+                if(outputStream != null){
+                    outputStream.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     private String buildSql(String account){
@@ -199,14 +288,12 @@ public class SocketConnection implements Runnable{
         return stringBuilder.toString();
     }
     
-    private void sendMessage(MessageType type,String message){
-            MessageModel messageModel = new MessageModel();
-            messageModel.setType(type.getCode());
-            messageModel.setSenderAccount("server");
-            messageModel.setReceiverAccount("client");
-            messageModel.setSenderImage(imageUrl);
-            messageModel.setMessage(message);
-            String answer = gson.toJson(messageModel);
+    private void sendMessageToClient(MessageType type,String message){
+        Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String time = format.format(date);
+        MessageModel messageModel = buildMessage(type.getCode(),time,message,"server","server","client","client","");
+        String answer = gson.toJson(messageModel);
         try {
             writer.write(answer + "\n");
             writer.flush();
@@ -215,20 +302,31 @@ public class SocketConnection implements Runnable{
         }
     }
     
-    private void sendMessage(MessageType type,String sender,String receiver,String message){
-            MessageModel messageModel = new MessageModel();
-            messageModel.setType(type.getCode());
-            messageModel.setSenderAccount(sender);
-            messageModel.setReceiverAccount(receiver);
-            messageModel.setSenderImage(imageUrl);
-            messageModel.setMessage(message);
-            String messageData = gson.toJson(messageModel);
+    private void sendMessageToFriend(MessageModel messageModel){
+        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
+        messageModel.setSenderImage(imageUrl);
+        String messageData = gson.toJson(messageModel);
         try {
             writer.write(messageData + "\n");
             writer.flush();
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private MessageModel buildMessage(int Type,String time,String message,String sender,String senderAccount,String receiver,String receiverAccount,String senderImage){
+        
+        MessageModel messageModel = new MessageModel();
+        messageModel.setType(Type);
+        messageModel.setTime(time);
+        messageModel.setMessage(message);
+        messageModel.setSender(sender);
+        messageModel.setSenderAccount(senderAccount);
+        messageModel.setReceiver(receiver);
+        messageModel.setReceiverAccount(receiverAccount);
+        messageModel.setSenderImage(senderImage);
+        
+        return messageModel;
     }
     
     public void resetFriendSocket(){

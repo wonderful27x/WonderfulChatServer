@@ -1,6 +1,8 @@
 package model;
 
-public class MessageModel{
+import java.io.Serializable;
+
+public class MessageModel implements Serializable{
 
     private String sender;
     private String senderImage;

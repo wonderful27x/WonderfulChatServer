@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,15 +35,18 @@ public class Startup extends HttpServlet{
     private ConcurrentHashMap<String,SocketConnection> hashMap;
     private ThreadPoolExecutor threadPool;
     private boolean runPermit;
+    private ServletContext context;
     
     @Override
     public void init(ServletConfig sc) throws ServletException {
+        super.init(sc);
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	//ServletContext context = getServletContext();//全局Context,可以用来共享数据
         //setAttribute(name,value);//往域对象里面添加数据，添加时以key-value形式添加,name是String类型，value是Object类型；
         //getAttribute(name);//根据指定的key读取域对象里面的数据
         //removeAttribute(name);//根据指定的key从域对象里面删除数据
         
+        context = getServletContext();
         startServer();
     }
 
@@ -112,7 +116,7 @@ public class Startup extends HttpServlet{
                 while(runPermit){
                     Socket socket = serverSocket.accept();
                     if(!runPermit)return;
-                    SocketConnection connection = new SocketConnection(socket,hashMap);
+                    SocketConnection connection = new SocketConnection(context,socket,hashMap);
                     threadPool.execute(connection);
                 }
             } catch (IOException ex) {

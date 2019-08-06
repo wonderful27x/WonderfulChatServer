@@ -14,7 +14,6 @@ import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,12 +38,15 @@ public class GetMessage extends HttpServlet{
         //removeAttribute(name);//根据指定的key从域对象里面删除数据
         
         ServletContext context = getServletContext();
-        ReadWriteLock lock = new ReentrantReadWriteLock();
         HttpMessageModel httpMessageModel = new HttpMessageModel();
+        ReentrantReadWriteLock lock = null;
         PrintWriter out = null;
         String account = request.getParameter("account");
-        account = "sgg";
         Gson gson = new Gson();
+        lock = (ReentrantReadWriteLock) context.getAttribute(account);
+        if(lock == null){
+            lock = new ReentrantReadWriteLock();
+        }
         try {
             lock.writeLock().lock();
             context.setAttribute(account,lock);
@@ -67,8 +69,9 @@ public class GetMessage extends HttpServlet{
             String jsonData = gson.toJson(httpMessageModel);
 
             out.print(jsonData);
-            deleteDir(file);
-           
+            if(file.exists()){
+                deleteDir(file);
+            }
         } catch (IOException ex) {
             Logger.getLogger(GetMessage.class.getName()).log(Level.SEVERE, null, ex);
             if(out == null)return;
@@ -77,6 +80,7 @@ public class GetMessage extends HttpServlet{
             String jsonData = gson.toJson(httpMessageModel);
             out.print(jsonData);
         } finally {
+            lock.writeLock().unlock();
             context.removeAttribute(account);
             if(out != null){
                 out.close();
@@ -98,6 +102,9 @@ public class GetMessage extends HttpServlet{
         try {
             inputStream = new ObjectInputStream(new FileInputStream(file));
             object = (List<MessageModel>) inputStream.readObject();
+            if(object == null){
+                return new ArrayList();
+            }
         } catch (IOException | ClassNotFoundException e) {
             Logger.getLogger(GetMessage.class.getName()).log(Level.SEVERE, null, e);
             return new ArrayList();
@@ -114,7 +121,7 @@ public class GetMessage extends HttpServlet{
     }
     
     private void deleteDir(File fileDir) {
-        if(fileDir == null || !fileDir.exists())return;
+//        if(fileDir == null || !fileDir.exists())return;
     	File[] files = fileDir.listFiles();
     	if(files != null) {
     		for(File file : files) {
