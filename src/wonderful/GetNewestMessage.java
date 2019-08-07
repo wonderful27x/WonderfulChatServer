@@ -28,7 +28,7 @@ import model.MessageModel;
  *
  * @author Acer
  */
-public class GetMessage extends HttpServlet{
+public class GetNewestMessage extends HttpServlet{
         
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
@@ -42,6 +42,7 @@ public class GetMessage extends HttpServlet{
         ReentrantReadWriteLock lock = null;
         PrintWriter out = null;
         String account = request.getParameter("account");
+        String friendAccount = request.getParameter("friendAccount");
         Gson gson = new Gson();
         lock = (ReentrantReadWriteLock) context.getAttribute(account);
         try {
@@ -58,12 +59,11 @@ public class GetMessage extends HttpServlet{
             out = response.getWriter();
             
             List<List<MessageModel>> messageList = new ArrayList<>();
-            File file = new File(CommonConstant.MESSAGE_PATH + account);
+            File file = new File(CommonConstant.MESSAGE_PATH + account + "\\" + friendAccount + ".txt");
             if(file.exists()){
-                File[] files = file.listFiles();
-                for(File child:files){
-                    List<MessageModel> messageModel = readObject(child);
-                    messageList.add(messageModel);
+                List<MessageModel> messageModel = readObject(file);
+                if(messageModel.size() >0){
+                    messageList.add(0,messageModel);
                 }
             }
             httpMessageModel.setResult("success");
@@ -75,7 +75,7 @@ public class GetMessage extends HttpServlet{
                 deleteDir(file);
             }
         } catch (IOException ex) {
-            Logger.getLogger(GetMessage.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GetNewestMessage.class.getName()).log(Level.SEVERE, null, ex);
             if(out == null)return;
             httpMessageModel.setResult("error");
             httpMessageModel.setMessage("error: " + ex.getMessage());

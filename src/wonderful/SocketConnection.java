@@ -214,12 +214,15 @@ public class SocketConnection implements Runnable{
         messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
         messageModel.setSenderImage(imageUrl);
         List<MessageModel> messageList;
-        if(lock == null){
-            lock = new ReentrantReadWriteLock();
-        }
         try {
-            lock.readLock().lock();
-            context.setAttribute(key[1],lock);
+            if(lock == null){
+                lock = new ReentrantReadWriteLock();
+                lock.readLock().lock();
+                context.setAttribute(key[1],lock);
+            }else{
+                lock.readLock().lock();
+            }
+
             messageList = readObject(file);
             messageList.add(messageModel);
             saveObject(file,messageList);
