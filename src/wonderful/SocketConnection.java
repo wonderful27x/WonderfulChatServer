@@ -55,7 +55,7 @@ public class SocketConnection implements Runnable{
     private boolean friendsCheck;
     private boolean initOk;
     private boolean running;
-    private String imageUrl;
+//    private String imageUrl;
     private ServletContext context;
     
     public SocketConnection(ServletContext context,Socket socket,ConcurrentHashMap<String,SocketConnection> hashMap){
@@ -117,7 +117,7 @@ public class SocketConnection implements Runnable{
                             String accountSql = result.getString("account");
                             int state = result.getInt("loginstate");
                             if(account[0].equals(accountSql) && state == 1){
-                                imageUrl = result.getString("imageurl");
+//                                imageUrl = result.getString("imageurl");
                                 identityPass = true;
                             }
                         }
@@ -149,7 +149,7 @@ public class SocketConnection implements Runnable{
                         break;
                     case SOCKET_CLOSE:
                         return;
-                    case MESSAGE_SEND:
+                    case MESSAGE_RECEIVE:
                         if(!identityPass){
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
                             return;
@@ -161,7 +161,7 @@ public class SocketConnection implements Runnable{
                         if(friendSocket == null){
                             saveMessage(messageModel);
                         }else{
-                            friendSocket.sendMessageToFriend(messageModel);
+                            friendSocket.sendMessageToFriend(message);
                         }
                         break;
                     default:
@@ -211,8 +211,8 @@ public class SocketConnection implements Runnable{
         ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);
         File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");
         
-        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
-        messageModel.setSenderImage(imageUrl);
+//        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
+//        messageModel.setSenderImage(imageUrl);
         List<MessageModel> messageList;
         try {
             if(lock == null){
@@ -332,12 +332,21 @@ public class SocketConnection implements Runnable{
         }
     }
     
-    private void sendMessageToFriend(MessageModel messageModel){
-        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
-        messageModel.setSenderImage(imageUrl);
-        String messageData = gson.toJson(messageModel);
+//    private void sendMessageToFriend(MessageModel messageModel){
+//        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
+//        messageModel.setSenderImage(imageUrl);
+//        String messageData = gson.toJson(messageModel);
+//        try {
+//            writer.write(messageData + "\n");
+//            writer.flush();
+//        } catch (IOException ex) {
+//            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
+    
+    private void sendMessageToFriend(String message){
         try {
-            writer.write(messageData + "\n");
+            writer.write(message + "\n");
             writer.flush();
         } catch (IOException ex) {
             Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
