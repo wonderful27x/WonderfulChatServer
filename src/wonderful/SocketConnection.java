@@ -378,3 +378,7 @@ public class SocketConnection implements Runnable{
     }
     
 }
+
+/**
+ * 这里缺少断开重连机制，客户端有可能聊天时连接中断，则会抛出异常
+ */

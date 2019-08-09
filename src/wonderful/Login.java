@@ -80,7 +80,6 @@ public class Login extends HttpServlet {
                     userModel.setLifeMotto(result.getString("lifemotto"));
                     userModel.setImageUrl(result.getString("imageurl"));
                     users.add(userModel);
-                    httpUserModel.setContent(users);
                     httpUserModel.setResult("success");
                     
 //                    String update = "update " + CommonConstant.TABLE_USER + " set loginstate = 1 where account = '" + account + "'";
@@ -100,6 +99,22 @@ public class Login extends HttpServlet {
                 httpUserModel.setResult("fail");
                 httpUserModel.setMessage("账号信息不存在！");
             }
+            
+            querySql = buildSqlQueryFriend(account);
+            result = statement.executeQuery(querySql);
+
+            while(result.next()){
+                userModel = new UserModel();
+                userModel.setAccount(result.getString("account"));
+                userModel.setNickname(result.getString("nickname"));
+                userModel.setRemark(result.getString("remark"));
+                userModel.setLifeMotto(result.getString("lifemotto"));
+                userModel.setImageUrl(result.getString("imageurl"));
+                users.add(userModel);
+            }
+            
+            httpUserModel.setContent(users);
+            
             String responseJson = gson.toJson(httpUserModel);
             out.print(responseJson);
         } catch (IOException ex) {
@@ -112,7 +127,10 @@ public class Login extends HttpServlet {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             if(out != null){
-                out.print(ex.getMessage());
+                httpUserModel.setResult("error");
+                httpUserModel.setMessage("error: " + ex.getMessage());
+                String responseJson = gson.toJson(httpUserModel);
+                out.print(responseJson);
             }
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -128,6 +146,17 @@ public class Login extends HttpServlet {
         stringBuilder.append("select * from ");
         stringBuilder.append(CommonConstant.TABLE_USER);
         stringBuilder.append(" where account = '");
+        stringBuilder.append(account);
+        stringBuilder.append("'");
+        
+        return stringBuilder.toString();
+    }
+    
+    private String buildSqlQueryFriend(String account){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("select * from ");
+        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
+        stringBuilder.append(" where foreignkey = '");
         stringBuilder.append(account);
         stringBuilder.append("'");
         
