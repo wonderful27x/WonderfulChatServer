@@ -1,6 +1,12 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package wonderful;
 
 import CommonConstant.CommonConstant;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -14,7 +20,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
-public class ChangeField extends HttpServlet{
+/**
+ *
+ * @author Acer
+ */
+public class DeleteFriend extends HttpServlet{
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
@@ -28,13 +38,12 @@ public class ChangeField extends HttpServlet{
             response.setCharacterEncoding("UTF-8");
             out = response.getWriter();
             String account = request.getParameter("account");
-            String field = request.getParameter("field");
-            String content = request.getParameter("content");
+            String friendAccount = request.getParameter("friendAccount");
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
 //            String updateSql = "update " + CommonConstant.TABLE_USER + " set " + field + " = '" + content + "'" + " where account = '" + account + "'";
-            String updateSql = buildSql(account,field,content);
+            String updateSql = buildSql(account,friendAccount);
             int rows = statement.executeUpdate(updateSql);
             
             if(rows >0){
@@ -43,23 +52,22 @@ public class ChangeField extends HttpServlet{
                 out.print("fail");
             }
             
-            String buildSqlSynchronize = buildSqlSynchronize(account,field,content);
-            int rowsInSynchronize = statement.executeUpdate(buildSqlSynchronize);
-            
-            if(rowsInSynchronize <=0){
-                Logger.getLogger(ChangeField.class.getName()).log(Level.SEVERE, null, rowsInSynchronize);
+            //删除好友消息
+            File file = new File(CommonConstant.MESSAGE_PATH + account + "\\" + friendAccount + ".txt");
+            if(file.exists()){
+                deleteDir(file);
             }
 
         } catch (IOException ex) {
             if(out != null){
                 out.print(ex.getMessage());
             }
-            Logger.getLogger(ChangeField.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DeleteFriend.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             if(out != null){
                 out.print(ex.getMessage());
             }
-            Logger.getLogger(ChangeField.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DeleteFriend.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             DBCPUtils.closeAll(result, statement, connection);
             if(out != null){
@@ -73,33 +81,32 @@ public class ChangeField extends HttpServlet{
 
     }
     
-    private String buildSql(String account,String field,String content){
+    private String buildSql(String account,String friendAccount){
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("update ");
-        stringBuilder.append(CommonConstant.TABLE_USER);
-        stringBuilder.append(" set ");
-        stringBuilder.append(field);
-        stringBuilder.append(" = '");
-        stringBuilder.append(content);
-        stringBuilder.append("' where account = '");
+        stringBuilder.append("delete from ");
+        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
+        stringBuilder.append(" where foreignkey = '");
         stringBuilder.append(account);
+        stringBuilder.append("' and account = '");
+        stringBuilder.append(friendAccount);
         stringBuilder.append("'");
         
         return stringBuilder.toString();
     }
     
-    private String buildSqlSynchronize(String account,String field,String content){
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("update ");
-        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
-        stringBuilder.append(" set ");
-        stringBuilder.append(field);
-        stringBuilder.append(" = '");
-        stringBuilder.append(content);
-        stringBuilder.append("' where account = '");
-        stringBuilder.append(account);
-        stringBuilder.append("'");
-        
-        return stringBuilder.toString();
+    private void deleteDir(File fileDir) {
+//        if(fileDir == null || !fileDir.exists())return;
+    	File[] files = fileDir.listFiles();
+    	if(files != null) {
+    		for(File file : files) {
+    			if(file.isDirectory()) {
+    				deleteDir(file);
+    			}else if(file.isFile()) {
+    				file.delete();
+    			}
+    		}
+    	}
+    	fileDir.delete();
     }
+    
 }
