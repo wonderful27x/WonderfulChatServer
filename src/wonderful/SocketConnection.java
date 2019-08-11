@@ -111,6 +111,7 @@ public class SocketConnection implements Runnable{
                         Connection connection = DBCPUtils.getConnection();
                         Statement statement = connection.createStatement();
                         
+                        //验证账号是否为登录状态
                         String sql = buildSqlIdentity(account[0]);
                         ResultSet result = statement.executeQuery(sql);
                         if(result.next()){
@@ -122,6 +123,7 @@ public class SocketConnection implements Runnable{
                             }
                         }
                         
+                        //验证对方是否已添加自己为好友
                         sql = buildSqlFriend(account[0],account[1]);
                         result = statement.executeQuery(sql);
                         if(result.next()){
@@ -193,7 +195,7 @@ public class SocketConnection implements Runnable{
                 if(writer != null){
                     writer.close();
                 }
-                if(hashMap != null){
+                if(hashMap != null && hashMapKey != null){
                    hashMap.remove(hashMapKey); 
                 }
                 hashMap = null;
