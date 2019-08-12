@@ -3,14 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/model/HttpMessageModel.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/SocketConnection.java</file>
+            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/ChangeField.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/HeadImage.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/GetMessage.java</file>
-            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/Login.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderfulchat/ServletOnly.java</file>
-            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/GetFriendList.java</file>
+            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/ChangeRemark.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/GetNewestMessage.java</file>
+            <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/wonderful/DeleteFriend.java</file>
             <file>file:/E:/NetBeans%20IDE/PROJECT/WonderfulChat/src/CommonConstant/CommonConstant.java</file>
         </group>
     </open-files>
