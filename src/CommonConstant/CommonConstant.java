@@ -18,7 +18,6 @@ public class CommonConstant {
    public static final String IMAGE_PATH = "D:\\VirtualDirectory\\image\\";
    public static final String MESSAGE_PATH = "D:\\VirtualDirectory\\message\\";
    public static final String HOST = "http://192.168.31.32:8080/";
-//   public static final String HOST = "http://172.16.169.110:8080/";
    
    public static final String IDENTITY_REQUEST = "Who you are ?";
    public static final String ACCEPT = "Socket created !";

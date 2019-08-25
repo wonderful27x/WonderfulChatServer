@@ -67,6 +67,8 @@ public class SocketConnection implements Runnable{
         gson = new Gson();
         initOk = true;
         running = true;
+        hashMapKey = "";
+        friendSocketKey = "";
         try {
             InputStream input = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
@@ -107,6 +109,10 @@ public class SocketConnection implements Runnable{
                 switch(MessageType.getByValue(messageModel.getType())){
                     case ANSWER:
                         String anserMessage = messageModel.getMessage();
+                        if(anserMessage == null || anserMessage.split("\\$").length != 2){
+                            sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
+                            return;
+                        }
                         String[] account = anserMessage.split("\\$");
                         Connection connection = DBCPUtils.getConnection();
                         Statement statement = connection.createStatement();
@@ -146,10 +152,13 @@ public class SocketConnection implements Runnable{
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
                             return;
                         }
+                        if(messageModel.getMessage() == null)return;
                         hashMapKey = messageModel.getMessage();
                         hashMap.put(hashMapKey, this);
+                        friendSocketKey = changeToFriendSocketKey(hashMapKey);
                         break;
                     case SOCKET_CLOSE:
+                        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Bye!", "Bye!");
                         return;
                     case MESSAGE_RECEIVE:
                         if(!identityPass){
@@ -157,7 +166,7 @@ public class SocketConnection implements Runnable{
                             return;
                         }
                         if(friendSocket == null){
-                            friendSocketKey = messageModel.getReceiverAccount() + "$" + messageModel.getSenderAccount();
+                            //friendSocketKey = messageModel.getReceiverAccount() + "$" + messageModel.getSenderAccount();
                             friendSocket = hashMap.get(friendSocketKey);
                         }
                         if(friendSocket == null){
@@ -178,6 +187,7 @@ public class SocketConnection implements Runnable{
             sendMessageToClient(MessageType.ERROR,ex.getMessage());
         }finally{
             try {
+                //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Finally!", "Finally!");
                 SocketConnection connection = null;
                 if(friendSocketKey != null && !friendSocketKey.isEmpty()){
                     connection = hashMap.get(friendSocketKey);
@@ -208,7 +218,7 @@ public class SocketConnection implements Runnable{
     }
     
     private void saveMessage(MessageModel messageModel){
-        if(hashMapKey == null)return;
+        if(hashMapKey == null || hashMapKey.split("\\$").length != 2)return;
         String[] key = hashMapKey.split("\\$");
         ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);
         File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");
@@ -296,6 +306,19 @@ public class SocketConnection implements Runnable{
         }
     }
     
+    //将自己的socketKey转换成朋友的socketKey
+    private String changeToFriendSocketKey(String socketKey){
+        String friendKey = "";
+        if(socketKey != null){
+            String[] keyArray = socketKey.split("\\$");
+            if(keyArray.length == 2){
+                friendKey = keyArray[1] + "$" + keyArray[0];
+            }
+        }
+               
+        return friendKey;
+    }
+    
     private String buildSqlIdentity(String account){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("select * from ");
@@ -322,7 +345,7 @@ public class SocketConnection implements Runnable{
     
     private void sendMessageToClient(MessageType type,String message){
         Date date = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:HH:ss");
         String time = format.format(date);
         MessageModel messageModel = buildMessage(type.getCode(),time,message,"server","server","client","client","");
         String answer = gson.toJson(messageModel);
@@ -372,6 +395,7 @@ public class SocketConnection implements Runnable{
     
     public void resetFriendSocket(){
         friendSocket = null;
+        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "My friendSocket has been reset!", "My friendSocket has been reset!");
     }
     
     public void stop(){
