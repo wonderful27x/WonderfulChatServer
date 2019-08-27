@@ -38,7 +38,7 @@ public class GetMessage extends HttpServlet{
         //removeAttribute(name);//根据指定的key从域对象里面删除数据
         
         ServletContext context = getServletContext();
-        HttpMessageModel httpMessageModel = new HttpMessageModel();
+        HttpMessageModel httpMessageModel = new HttpMessageModel();//读写锁保证数据同步
         ReentrantReadWriteLock lock = null;
         PrintWriter out = null;
         String account = request.getParameter("account");

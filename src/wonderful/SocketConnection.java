@@ -220,7 +220,7 @@ public class SocketConnection implements Runnable{
     private void saveMessage(MessageModel messageModel){
         if(hashMapKey == null || hashMapKey.split("\\$").length != 2)return;
         String[] key = hashMapKey.split("\\$");
-        ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);
+        ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);//读写锁保证数据同步，这里上锁的为整个文件夹，所以文件锁无法实现
         File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");
         
 //        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
