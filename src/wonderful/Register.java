@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 账号注册，注册成功后存入数据库
+ * @Date 2019-8-30
  */
 public class Register extends HttpServlet{
        
@@ -55,13 +56,12 @@ public class Register extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String querySql = "select * from " + CommonConstant.TABLE_USER + " where account = '" + account + "'";
+
             String querySql = buildSqlQuery(account);
             result = statement.executeQuery(querySql);
             if(result.next()){
                 out.print("账号已存在！");
             }else{
-//                String querySql = "insert into " + CommonConstant.TABLE_USER + "(account,password) values('" + account + "','" + pass + "')";
                 String updateSql = buildSqlUpdate(account,pass);
                 int rows = statement.executeUpdate(updateSql);
                 if(rows>0){

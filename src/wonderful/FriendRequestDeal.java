@@ -6,34 +6,24 @@
 package wonderful;
 
 import CommonConstant.CommonConstant;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.lang.reflect.Type;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.FriendRequestModel;
 import model.UserModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 处理好友申请，同意或拒绝，这里采用的是数据库方案，优于文件系统
+ * @Date 2019-8-30
  */
 public class FriendRequestDeal extends HttpServlet{
     
@@ -106,6 +96,12 @@ public class FriendRequestDeal extends HttpServlet{
 
     }
     
+    /**
+    * @description 无论同意还是拒绝都将删除请求数据
+    * @param account
+    * @param host
+    * @return boolean
+    */
     private boolean removeRequest(String account,String host){
         Connection connection = null;
         Statement statement = null;
@@ -154,6 +150,12 @@ public class FriendRequestDeal extends HttpServlet{
         return userModel;
     }
     
+    /**
+    * @description 同意则添加为自己好友
+    * @param account
+    * @param friendAccount
+    * @return boolean
+    */
     private boolean addFriend(String account,String friendAccount){
         Connection connection = null;
         Statement statement = null;
@@ -178,7 +180,12 @@ public class FriendRequestDeal extends HttpServlet{
         return false;
     }
     
-    //好友情况判断(A+B)，返回值：0:B->A,A->B;1:B->A,A-!B;2:B-!A,A->B;3:B-!A,A-!B;-1:other
+    /**
+    * @description 好友情况判断(A+B)，返回值：0:B->A,A->B;1:B->A,A-!B;2:B-!A,A->B;3:B-!A,A-!B;-1:other
+    * @param account
+    * @param friendAccount
+    * @return int
+    */
     private int situationAnalyze(String account,String friendAccount){
         Connection connection = null;
         Statement statement = null;
@@ -224,7 +231,12 @@ public class FriendRequestDeal extends HttpServlet{
         return situation;
     }
     
-    //朋友查询语句构造函数，account:查询账号，foreignkey:外键
+    /**
+    * @description 朋友查询语句构造函数，account:查询账号，foreignkey:外键
+    * @param account
+    * @param foreignkey
+    * @return String
+    */
     private String buildExistSql(String account,String foreignkey){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("select * from ");

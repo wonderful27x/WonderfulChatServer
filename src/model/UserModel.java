@@ -6,8 +6,9 @@
 package model;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description USER信息Model
+ * @Date 2019-8-30
  */
 public class UserModel {
     

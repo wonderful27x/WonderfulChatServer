@@ -1,5 +1,10 @@
 package CommonConstant;
 
+/**
+ * @Author wonderful
+ * @Description 消息类型枚举器
+ * @Date 2019-8-30
+ */
 public enum MessageType {
 
     ANSWER(10000, "ANSWER"),

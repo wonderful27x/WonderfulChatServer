@@ -2,6 +2,11 @@ package model;
 
 import java.io.Serializable;
 
+/**
+ * @Author wonderful
+ * @Description 消息封装
+ * @Date 2019-8-30
+ */
 public class MessageModel implements Serializable{
 
     private String sender;

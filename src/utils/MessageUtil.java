@@ -8,8 +8,9 @@ package utils;
 import CommonConstant.MessageType;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 消息创建解析工具
+ * @Date 2019-8-30
  */
 public class MessageUtil {
     
@@ -34,8 +35,8 @@ public class MessageUtil {
             String headMessage = message.substring(0,index);
             messageArray = headMessage.split(" ");
             messageArray[0] = messageArray[0].substring(messageArray[0].indexOf(":")+1);
-            messageArray[1] = messageArray[1].substring(messageArray[1].indexOf(":")+1);;
-            messageArray[2] = messageArray[2].substring(messageArray[2].indexOf(":")+1);;
+            messageArray[1] = messageArray[1].substring(messageArray[1].indexOf(":")+1);
+            messageArray[2] = messageArray[2].substring(messageArray[2].indexOf(":")+1);
 
             return messageArray;
 

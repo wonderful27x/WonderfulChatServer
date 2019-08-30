@@ -20,8 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 修改备注
+ * @Date 2019-8-30
  */
 public class ChangeRemark extends HttpServlet{
     
@@ -42,7 +43,7 @@ public class ChangeRemark extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String updateSql = "update " + CommonConstant.TABLE_USER + " set " + field + " = '" + content + "'" + " where account = '" + account + "'";
+
             String updateSql = buildSql(account,friendAccount,content);
             int rows = statement.executeUpdate(updateSql);
             

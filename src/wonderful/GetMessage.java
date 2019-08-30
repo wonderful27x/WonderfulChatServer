@@ -25,18 +25,15 @@ import model.HttpMessageModel;
 import model.MessageModel;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 消息请求，这里获取的是所有的消息，client向server请求消息，
+ * 如果有则取出数据返回并删除server中的存储数据
+ * @Date 2019-8-30
  */
 public class GetMessage extends HttpServlet{
         
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
-        //ServletContext context = getServletContext();//全局Context,可以用来共享数据
-        //setAttribute(name,value);//往域对象里面添加数据，添加时以key-value形式添加,name是String类型，value是Object类型；
-        //getAttribute(name);//根据指定的key读取域对象里面的数据
-        //removeAttribute(name);//根据指定的key从域对象里面删除数据
-        
         ServletContext context = getServletContext();
         HttpMessageModel httpMessageModel = new HttpMessageModel();//读写锁保证数据同步
         ReentrantReadWriteLock lock = null;
@@ -123,7 +120,6 @@ public class GetMessage extends HttpServlet{
     }
     
     private void deleteDir(File fileDir) {
-//        if(fileDir == null || !fileDir.exists())return;
     	File[] files = fileDir.listFiles();
     	if(files != null) {
     		for(File file : files) {

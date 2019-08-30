@@ -26,8 +26,9 @@ import model.UserModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 登录，登录状态标志置1，同时返回用户信息和好友列表信息
+ * @Date 2019-8-30
  */
 public class Login extends HttpServlet {
 
@@ -67,7 +68,7 @@ public class Login extends HttpServlet {
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String querySql = "select * from " + CommonConstant.TABLE_USER + " where account = '" + account + "'";
+
             String querySql = buildSqlQuery(account);
             result = statement.executeQuery(querySql);
 
@@ -81,8 +82,7 @@ public class Login extends HttpServlet {
                     userModel.setImageUrl(result.getString("imageurl"));
                     users.add(userModel);
                     httpUserModel.setResult("success");
-                    
-//                    String update = "update " + CommonConstant.TABLE_USER + " set loginstate = 1 where account = '" + account + "'";
+
                     String update = buildSqlUpdate(account);
                     int rows = statement.executeUpdate(update);
                     if(rows <= 0){

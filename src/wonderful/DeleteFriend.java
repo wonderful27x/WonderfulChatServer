@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 删除朋友
+ * @Date 2019-8-30
  */
 public class DeleteFriend extends HttpServlet{
     
@@ -42,7 +43,7 @@ public class DeleteFriend extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String updateSql = "update " + CommonConstant.TABLE_USER + " set " + field + " = '" + content + "'" + " where account = '" + account + "'";
+
             String updateSql = buildSql(account,friendAccount);
             int rows = statement.executeUpdate(updateSql);
             
@@ -52,7 +53,7 @@ public class DeleteFriend extends HttpServlet{
                 out.print("fail");
             }
             
-            //删除好友消息
+            /**同时删除好友消息*/
             File file = new File(CommonConstant.MESSAGE_PATH + account + "\\" + friendAccount + ".txt");
             if(file.exists()){
                 deleteDir(file);
@@ -95,7 +96,6 @@ public class DeleteFriend extends HttpServlet{
     }
     
     private void deleteDir(File fileDir) {
-//        if(fileDir == null || !fileDir.exists())return;
     	File[] files = fileDir.listFiles();
     	if(files != null) {
     		for(File file : files) {

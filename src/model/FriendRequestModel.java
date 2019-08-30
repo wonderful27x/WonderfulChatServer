@@ -6,8 +6,9 @@
 package model;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 好友请求Model
+ * @Date 2019-8-30
  */
 public class FriendRequestModel extends UserModel{
 

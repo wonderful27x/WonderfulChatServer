@@ -14,10 +14,8 @@ import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,35 +23,20 @@ import model.HttpMessageModel;
 import model.MessageModel;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 获取最新消息，这里获取的是单个朋友的消息，这里可以不上锁
+ * @Date 2019-8-30
  */
 public class GetNewestMessage extends HttpServlet{
         
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response){
-        //ServletContext context = getServletContext();//全局Context,可以用来共享数据
-        //setAttribute(name,value);//往域对象里面添加数据，添加时以key-value形式添加,name是String类型，value是Object类型；
-        //getAttribute(name);//根据指定的key读取域对象里面的数据
-        //removeAttribute(name);//根据指定的key从域对象里面删除数据
-        
-        ServletContext context = getServletContext();
         HttpMessageModel httpMessageModel = new HttpMessageModel();
-        ReentrantReadWriteLock lock = null;
         PrintWriter out = null;
         String account = request.getParameter("account");
         String friendAccount = request.getParameter("friendAccount");
         Gson gson = new Gson();
-        lock = (ReentrantReadWriteLock) context.getAttribute(account);
         try {
-            if(lock == null){
-                lock = new ReentrantReadWriteLock();
-                lock.writeLock().lock();
-                context.setAttribute(account,lock);
-            }else{
-                lock.writeLock().lock();
-            }
-            
             response.setContentType("text/javascript; charset=utf-8");
             response.setCharacterEncoding("UTF-8");
             out = response.getWriter();
@@ -82,8 +65,6 @@ public class GetNewestMessage extends HttpServlet{
             String jsonData = gson.toJson(httpMessageModel);
             out.print(jsonData);
         } finally {
-            lock.writeLock().unlock();
-            context.removeAttribute(account);
             if(out != null){
                 out.close();
             }
@@ -123,7 +104,6 @@ public class GetNewestMessage extends HttpServlet{
     }
     
     private void deleteDir(File fileDir) {
-//        if(fileDir == null || !fileDir.exists())return;
     	File[] files = fileDir.listFiles();
     	if(files != null) {
     		for(File file : files) {

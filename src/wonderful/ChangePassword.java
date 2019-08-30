@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 修改密码
+ * @Date 2019-8-30
  */
 public class ChangePassword extends HttpServlet {
 
@@ -30,7 +31,6 @@ public class ChangePassword extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
     {
-//        doPost(request,response);
         
         response.setContentType("text/plain; charset=utf-8");
 	response.setCharacterEncoding("UTF-8");
@@ -58,15 +58,13 @@ public class ChangePassword extends HttpServlet {
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String querySql = "select * from " + CommonConstant.TABLE_USER + " where account = '" + account + "'";
+
            String querySql = buildSqlQuery(account);
            result = statement.executeQuery(querySql);
 
             if(result.next()){
                 String password = result.getString("password");
                 if(password != null && password.equals(oldPass)){
-                    
-//                    String update = "update " + CommonConstant.TABLE_USER + " set password = '" + newPass +"'" + " where account = '" + account + "'";
                     String update = buildSqlUpdate(account,newPass);
                     int rows = statement.executeUpdate(update);
                     if(rows > 0){

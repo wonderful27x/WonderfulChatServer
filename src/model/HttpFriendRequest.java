@@ -8,8 +8,9 @@ package model;
 import java.util.List;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description HTTP Model
+ * @Date 2019-8-30
  */
 public class HttpFriendRequest extends HttpBaseModel<List<FriendRequestModel>> {
 }

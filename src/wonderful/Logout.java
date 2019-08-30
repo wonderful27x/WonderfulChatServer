@@ -20,8 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 退出登录，将登录状态标志置0
+ * @Date 2019-8-30
  */
 public class Logout extends HttpServlet{
     
@@ -40,7 +41,7 @@ public class Logout extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String updateSql = "update " + CommonConstant.TABLE_USER + " set loginstate = 0 where account = '" + account + "'";
+
             String updateSql = buildSqlUpdate(account);
             int rows = statement.executeUpdate(updateSql);
             

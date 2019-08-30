@@ -6,8 +6,9 @@
 package CommonConstant;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 常用常量
+ * @Date 2019-8-30
  */
 public class CommonConstant {
     
@@ -19,7 +20,7 @@ public class CommonConstant {
    public static final String IMAGE_PATH = "D:\\VirtualDirectory\\image\\";
    public static final String MESSAGE_PATH = "D:\\VirtualDirectory\\message\\";
    public static final String FRIEND_REQUEST_PATH = "D:\\VirtualDirectory\\friendRequest\\";
-   public static final String HOST = "http://192.168.31.32:8080/";
+   public static final String HOST = "http://172.16.169.56:8080/";
    
    public static final String IDENTITY_REQUEST = "Who you are ?";
    public static final String ACCEPT = "Socket created !";

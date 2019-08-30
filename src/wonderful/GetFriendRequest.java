@@ -25,8 +25,9 @@ import model.HttpFriendRequest;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 获取所有的好友请求
+ * @Date 2019-8-30
  */
 public class GetFriendRequest extends HttpServlet{
     

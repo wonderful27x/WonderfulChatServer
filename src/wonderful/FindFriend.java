@@ -25,8 +25,9 @@ import model.UserModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 查找朋友
+ * @Date 2019-8-30
  */
 public class FindFriend extends HttpServlet{
     
@@ -50,7 +51,7 @@ public class FindFriend extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String querySql = "select * from " + CommonConstant.TABLE_USER + " where account = '" + account + "'";
+
             String querySql = buildSql(account);
             result = statement.executeQuery(querySql);
 

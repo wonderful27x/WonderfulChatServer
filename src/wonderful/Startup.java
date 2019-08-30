@@ -26,30 +26,38 @@ import javax.servlet.http.HttpServletResponse;
 import wonderfulchat.ServletOnly;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description SERVLET自启动初始化，
+ * TOMCAT启动后自动运行的servlet,
+ * 作为启动项进行必要的初始化，
+ * 客户端没创建一个Socket则将其封装成一个Connection并添加到Socket管理器
+ * @Date 2019-8-30
  */
 public class Startup extends HttpServlet{
    
+    /**服务端Socket*/
     private ServerSocket serverSocket;
+    /**客户端Socket管理器*/
     private ConcurrentHashMap<String,SocketConnection> hashMap;
+    /**线程池*/
     private ThreadPoolExecutor threadPool;
+    /**线程运行控制变量*/
     private boolean runPermit;
+    /**全局context，可用于共享数据*/
     private ServletContext context;
     
     @Override
     public void init(ServletConfig sc) throws ServletException {
         super.init(sc);
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	//ServletContext context = getServletContext();//全局Context,可以用来共享数据
-        //setAttribute(name,value);//往域对象里面添加数据，添加时以key-value形式添加,name是String类型，value是Object类型；
-        //getAttribute(name);//根据指定的key读取域对象里面的数据
-        //removeAttribute(name);//根据指定的key从域对象里面删除数据
-        
         context = getServletContext();
         startServer();
     }
 
+    /**
+    * @description 通过访问接口输出一些信息，以此可以随时监测项目的运行情况
+    * @param request
+    * @param response
+    */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response){
         
@@ -95,7 +103,9 @@ public class Startup extends HttpServlet{
         }
     }
     
-    //初始化
+    /**
+    * @description 初始化线程池，服务端Socket等
+    */
     private void startServer(){
         try {
             runPermit = true;

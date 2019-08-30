@@ -38,8 +38,11 @@ import model.MessageModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description SOCKET核心封装类，
+ * 将socket封装成一个类，让其拥有身份验证，消息转发，消息存储等功能
+ * SocketConnection持有Socket管理器HashMap，当身份验证通过时将自己添加到管理器中
+ * @Date 2019-8-30
  */
 public class SocketConnection implements Runnable{
     
@@ -55,9 +58,14 @@ public class SocketConnection implements Runnable{
     private boolean friendsCheck;
     private boolean initOk;
     private boolean running;
-//    private String imageUrl;
     private ServletContext context;
     
+    /**
+    * @description 构造函数，数据初始化
+    * @param context
+    * @param socket
+    * @param hashMap
+    */
     public SocketConnection(ServletContext context,Socket socket,ConcurrentHashMap<String,SocketConnection> hashMap){
         this.context = context;
         this.socket = socket;
@@ -101,12 +109,20 @@ public class SocketConnection implements Runnable{
         String message;
         MessageModel messageModel;
         try {
-            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            sendMessageToClient(MessageType.ANSWER,CommonConstant.IDENTITY_REQUEST);
+            /** 
+             * 阶段一：
+             * socket创建后向client发起身份验证请求
+             */
+            sendMessageToClient(MessageType.ANSWER,CommonConstant.IDENTITY_REQUEST);        
             while(running && (message = reader.readLine()) != null){
                 if(!running)return;
                 messageModel = gson.fromJson(message, MessageModel.class);
                 switch(MessageType.getByValue(messageModel.getType())){
+                    /** 
+                     * 阶段二：
+                     * 拿到应答后首先验证账号登录状态，再验证好友是否也添加了自己，
+                     * 如果验证失败则禁止消息转发和存储
+                     */
                     case ANSWER:
                         String anserMessage = messageModel.getMessage();
                         if(anserMessage == null || anserMessage.split("\\$").length != 2){
@@ -124,7 +140,6 @@ public class SocketConnection implements Runnable{
                             String accountSql = result.getString("account");
                             int state = result.getInt("loginstate");
                             if(account[0].equals(accountSql) && state == 1){
-//                                imageUrl = result.getString("imageurl");
                                 identityPass = true;
                             }
                         }
@@ -147,6 +162,14 @@ public class SocketConnection implements Runnable{
                             return;
                         }
                         break;
+                    /** 
+                     * 阶段三：
+                     * 验证通过后client向server端发送socket key,server将此socket加入管理器，同时将这个key转化为朋友的socket key,
+                     * 这里的逻辑是每个client建立的socket是指向朋友对自己的socket的,这就明确了通信的方向，即A要跟B聊天，A建立了一个指向B的socket,
+                     * 哈希键为A.account$B.account,而B也必须建立指向A的socket,哈希键为B.account$A.account,双方才能通信
+                     * 理论上来说这个key应该是由服务端指定的，这样做只是为了获得client的应答，实际上client是不能指定自己的socket key的
+                     * 注意：这里说的socket key 指的就是管理器的哈希键
+                     */
                     case SOCKET_KEY:
                         if(!identityPass){
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
@@ -157,9 +180,14 @@ public class SocketConnection implements Runnable{
                         hashMap.put(hashMapKey, this);
                         friendSocketKey = changeToFriendSocketKey(hashMapKey);
                         break;
-                    case SOCKET_CLOSE:
-                        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Bye!", "Bye!");
-                        return;
+                    /** 
+                     * 阶段四：
+                     * 验证都通过后双方开始互发消息，服务器只是一个中转站，
+                     * 注意：这时候有可能发生两种情况，一是双方都建立了指向对方的socket,这时服务器直接转发消息，
+                     * 二是A建立了指向B的socket,但是B没有建立socket或指向的不是A，这时则认为B不在线，
+                     * 则将消息存储到文件系统，当B请求数据时将消息取出返回，这里判断B是否在线的依据就是以键值为
+                     * B.account$A.account从管理器中取出socket,如果存在说明在线，否则不在线
+                     */
                     case MESSAGE_RECEIVE:
                         if(!identityPass){
                             sendMessageToClient(MessageType.ANSWER,CommonConstant.REFUSE);
@@ -174,6 +202,14 @@ public class SocketConnection implements Runnable{
                         }else{
                             friendSocket.sendMessageToFriend(message);
                         }
+                        break;
+                    /** 
+                     * 阶段五：
+                     * client离开时主动请求关闭socket,server调用close,在阻塞的情况下，只有这种方法是安全的，
+                     * 但确是不可靠的，这里并没有真正的关闭socket，只是break,将最终的资源释放交给finally处理
+                     */
+                    case SOCKET_CLOSE:
+                        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Bye!", "Bye!");
                         break;
                     default:
                         break;
@@ -217,14 +253,22 @@ public class SocketConnection implements Runnable{
         }
     }
     
+   /**
+    * @description 当好友不在线时，将数据存入文件系统后缀名为account.txt
+    * A发给B的消息：将消息存入path + B.account的文件夹中，并命名为A.account.txt
+    * 当B请求数据后将整个文件夹删除，这里出现并发时的安全隐患而引入锁机制，又因为需要锁住整个文件夹，因此使用了读写锁，
+    * 当B读取消息时获取的是写锁，A写消息时却是读锁
+    * @param messageModel
+    */
     private void saveMessage(MessageModel messageModel){
         if(hashMapKey == null || hashMapKey.split("\\$").length != 2)return;
         String[] key = hashMapKey.split("\\$");
-        ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[0]);//读写锁保证数据同步，这里上锁的为整个文件夹，所以文件锁无法实现
-        File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");
-        
-//        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
-//        messageModel.setSenderImage(imageUrl);
+        /**
+         * 读写锁保证数据同步，这里上锁的为整个文件夹，所以文件锁无法实现
+         * 注意：因为读写数据并不是在同一个Servlet,因此通过全局context来共享数据，以hashMap存储，锁的键值为B.account
+         */
+        ReentrantReadWriteLock lock = (ReentrantReadWriteLock) context.getAttribute(key[1]); 
+        File file = createFile(CommonConstant.MESSAGE_PATH + key[1],key[0] + ".txt");     
         List<MessageModel> messageList;
         try {
             if(lock == null){
@@ -239,13 +283,17 @@ public class SocketConnection implements Runnable{
             messageList.add(messageModel);
             saveObject(file,messageList);
         }finally{
+            /**
+             * 这里对锁的控制仍然不理想，假设A和C同时读锁，A于C先读完，于是A释放了锁，
+             * 但是C仍然在读，这时B有可能开始写文件，造成数据不同步
+             */
             lock.readLock().unlock();
             context.removeAttribute(key[1]);
         }
     }
     
     private List<MessageModel> readObject(File file) {
-        if(file == null || !file.exists() || file.length() <=0){
+        if(file == null || !file.exists() || file.length() <= 0){
             return new ArrayList();
         }
     	List<MessageModel> object = null;
@@ -306,7 +354,11 @@ public class SocketConnection implements Runnable{
         }
     }
     
-    //将自己的socketKey转换成朋友的socketKey
+    /**
+    * @description 将自己的socketKey转换成朋友的socketKey
+    * @param socketKey
+    * @return String
+    */
     private String changeToFriendSocketKey(String socketKey){
         String friendKey = "";
         if(socketKey != null){
@@ -343,6 +395,11 @@ public class SocketConnection implements Runnable{
         return stringBuilder.toString();
     }
     
+    /**
+    * @description server向client发送消息
+    * @param type
+    * @param message
+    */
     private void sendMessageToClient(MessageType type,String message){
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:HH:ss");
@@ -357,18 +414,10 @@ public class SocketConnection implements Runnable{
         }
     }
     
-//    private void sendMessageToFriend(MessageModel messageModel){
-//        messageModel.setType(MessageType.MESSAGE_RECEIVE.getCode());
-//        messageModel.setSenderImage(imageUrl);
-//        String messageData = gson.toJson(messageModel);
-//        try {
-//            writer.write(messageData + "\n");
-//            writer.flush();
-//        } catch (IOException ex) {
-//            Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-    
+    /**
+    * @description 如果朋友在线则直接将数据转发
+    * @param message
+    */
     private void sendMessageToFriend(String message){
         try {
             writer.write(message + "\n");

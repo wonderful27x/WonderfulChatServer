@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import utils.DBCPUtils;
 
+/**
+ * @Author wonderful
+ * @Description 修改字段，主要为昵称，座右铭
+ * @Date 2019-8-30
+ */
 public class ChangeField extends HttpServlet{
     
     @Override
@@ -33,7 +38,7 @@ public class ChangeField extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String updateSql = "update " + CommonConstant.TABLE_USER + " set " + field + " = '" + content + "'" + " where account = '" + account + "'";
+
             String updateSql = buildSql(account,field,content);
             int rows = statement.executeUpdate(updateSql);
             

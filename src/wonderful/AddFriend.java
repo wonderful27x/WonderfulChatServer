@@ -32,8 +32,9 @@ import model.UserModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 添加朋友，同时发起好友申请
+ * @Date 2019-8-30
  */
 public class AddFriend extends HttpServlet{
     
@@ -136,6 +137,12 @@ public class AddFriend extends HttpServlet{
 
     }
     
+    /**
+    * @description 删除请求数据
+    * @param account
+    * @param host
+    * @return boolean
+    */
     private boolean removeRequest(String account,String host){
         Connection connection = null;
         Statement statement = null;
@@ -184,7 +191,12 @@ public class AddFriend extends HttpServlet{
         return userModel;
     }
     
-    //添加好友请求，数据库方案
+    /**
+     * @Description 添加好友请求，数据库方案
+     * @param account
+     * @param friendAccount
+     * @return boolean
+     */
     private boolean addRuquest(String account,String friendAccount){
         Connection connection = null;
         Statement statement = null;
@@ -218,44 +230,6 @@ public class AddFriend extends HttpServlet{
         return false;
     }
     
-//    //添加好友请求，这样好友就能主动收到好友的添加请求，这里使用的是文件系统，使用数据库将是一个更好的方案
-//    private boolean addRuquest(String account,String friendAccount){
-//        UserModel userModel = getUserModel(account);
-//        if(userModel == null)return false;
-//        FriendRequestModel requestModel = new FriendRequestModel(userModel);
-//        Date date = new Date();
-//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:HH:ss");
-//        String time = format.format(date);        
-//        requestModel.setRequestTime(time);
-//        
-//        File file = new File(CommonConstant.FRIEND_REQUEST_PATH + friendAccount + ".txt");
-//        if(!file.exists()){
-//            try {
-//                if(!file.createNewFile()){
-//                    return false;
-//                }
-//            } catch (IOException ex) {
-//                Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, null, ex);
-//                return false;
-//            }
-//        }
-//        HashMap<String,FriendRequestModel> requestMap = fileRead(file);
-//        if(requestMap == null){
-//            requestMap = new HashMap<>();
-//        }
-//        requestMap.put(account,requestModel);
-//        return fileWrite(file,requestMap);
-//    }
-    
-//    //删除请求消息（文件系统）
-//    private boolean removeRequest(String account,String friendAccount){
-//        File file = new File(CommonConstant.FRIEND_REQUEST_PATH + account + ".txt");
-//        if(!file.exists() || !file.isFile())return false;
-//        HashMap<String,FriendRequestModel> requestMap = fileRead(file);
-//        if(requestMap == null || requestMap.size() <= 0)return false;
-//        requestMap.remove(friendAccount);
-//        return fileWrite(file,requestMap);
-//    }
     
     //写入请求（文件系统）
     private boolean fileWrite(File file,HashMap<String,FriendRequestModel> requestMap) {
@@ -358,17 +332,6 @@ public class AddFriend extends HttpServlet{
             //从USER表中取出好友信息
             UserModel userModel = getUserModel(friendAccount);
             if(userModel == null)return false;
-//            UserModel userModel = new UserModel();
-//            String querySql = buildSqlUser(friendAccount);
-//            result = statement.executeQuery(querySql);
-//            if(result.next()){
-//                userModel.setAccount(result.getString("account"));
-//                userModel.setNickname(result.getString("nickname"));
-//                userModel.setLifeMotto(result.getString("lifemotto"));
-//                userModel.setImageUrl(result.getString("imageurl"));
-//            }else{
-//                return false;
-//            }
 
             //添加到FRIENDLIST表中
             String updateSql = buildSqlInsert(account,userModel);
@@ -383,7 +346,12 @@ public class AddFriend extends HttpServlet{
         return false;
     }
     
-    //好友情况判断(A+B)，返回值：0:B->A,A->B;1:B->A,A-!B;2:B-!A,A->B;3:B-!A,A-!B;-1:other
+    /**
+     * @Description 好友情况判断(A+B)，返回值：0:B->A,A->B;1:B->A,A-!B;2:B-!A,A->B;3:B-!A,A-!B;-1:other
+     * @param account
+     * @param friendAccount
+     * @return int
+     */
     private int situationAnalyze(String account,String friendAccount){
         Connection connection = null;
         Statement statement = null;
@@ -429,7 +397,12 @@ public class AddFriend extends HttpServlet{
         return situation;
     }
     
-    //朋友查询语句构造函数，account:查询账号，foreignkey:外键
+    /**
+    * @description 朋友查询语句构造函数，account:查询账号，foreignkey:外键
+    * @param account
+    * @param foreignkey
+    * @return String
+    */
     private String buildExistSql(String account,String foreignkey){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("select * from ");
@@ -577,156 +550,3 @@ public class AddFriend extends HttpServlet{
         
     }
 }
-
-
-
-///**
-// *
-// * @author Acer
-// */
-//public class AddFriend extends HttpServlet{
-//    
-//    @Override
-//    public void doGet(HttpServletRequest request, HttpServletResponse response){
-//        PrintWriter out = null;
-//        Connection connection = null;
-//        Statement statement = null;
-//        ResultSet result = null;
-//        
-//        UserModel userModel = new UserModel();
-//        
-//        try {
-//            response.setContentType("text/plain; charset=utf-8");
-//            response.setCharacterEncoding("UTF-8");
-//            out = response.getWriter();
-//            String account = request.getParameter("account");
-//            String friendAccount = request.getParameter("friendAccount");
-//            
-//            connection = DBCPUtils.getConnection();
-//            statement = connection.createStatement();
-//            
-////            String querySql = "select account from " + CommonConstant.TABLE_FRIEND_LIST + " where foreignkey = '" + account + "'";
-//            //先判断好友是否已经存在
-//            String querySql = buildSqlExist(account);
-//            result = statement.executeQuery(querySql);
-//            while(result.next()){
-//                if(result.getString("account").equals(friendAccount)){
-//                    out.print("exist");
-//                    return;
-//                }
-//            }
-//            
-////            querySql = "select * from " + CommonConstant.TABLE_USER + " where account = '" + friendAccount + "'";
-//            //从USER表中取出好友信息
-//            querySql = buildSqlUser(friendAccount);
-//            result = statement.executeQuery(querySql);
-//            if(result.next()){
-//                userModel.setAccount(result.getString("account"));
-//                userModel.setNickname(result.getString("nickname"));
-//                userModel.setLifeMotto(result.getString("lifemotto"));
-//                userModel.setImageUrl(result.getString("imageurl"));
-//            }else{
-//                out.print("fail");
-//                return;
-//            }
-//            
-////            String updateSql = "insert into " + CommonConstant.TABLE_FRIEND_LIST + " values('" +
-////                    userModel.getAccount() + "','" + userModel.getNickname() + "','" +
-////                    "null" + "','" + userModel.getLifeMotto() + "','" + userModel.getImageUrl() +
-////                    "','" + account + "')";
-//            //添加到FRIENDLIST表中
-//            String updateSql = buildSqlInsert(account,userModel);
-//            int rows = statement.executeUpdate(updateSql);
-//            if(rows >0){
-//                out.print("success");
-//            }else{
-//                out.print("fail");
-//            }
-//            
-//        } catch (IOException ex) {
-//            if(out != null){
-//                out.print(ex.getMessage());
-//            }
-//            Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (SQLException ex) {
-//            if(out != null){
-//                out.print(ex.getMessage());
-//            }
-//            Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, null, ex);
-//        } finally {
-//            DBCPUtils.closeAll(result, statement, connection);
-//            if(out != null){
-//                out.close();
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void doPost(HttpServletRequest request, HttpServletResponse response){
-//
-//    }
-//    
-//    private String buildSqlExist(String account){
-//        StringBuilder stringBuilder = new StringBuilder();
-//        stringBuilder.append("select account from ");
-//        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
-//        stringBuilder.append(" where foreignkey = '");
-//        stringBuilder.append(account);
-//        stringBuilder.append("'");
-//        
-//        return stringBuilder.toString();
-//    }
-//    
-//    private String buildSqlUser(String friendAccount){
-//        StringBuilder stringBuilder = new StringBuilder();
-//        stringBuilder.append("select * from ");
-//        stringBuilder.append(CommonConstant.TABLE_USER);
-//        stringBuilder.append(" where account = '");
-//        stringBuilder.append(friendAccount);
-//        stringBuilder.append("'");
-//        
-//        return stringBuilder.toString();
-//    }
-//    
-//    private String buildSqlInsert(String account,UserModel userModel){
-//        StringBuilder stringBuilder = new StringBuilder();
-//        stringBuilder.append("insert into ");
-//        stringBuilder.append(CommonConstant.TABLE_FRIEND_LIST);
-//        stringBuilder.append(" values('");
-//        stringBuilder.append(userModel.getAccount());
-//        stringBuilder.append("',");
-//        if(userModel.getNickname() == null){
-//            stringBuilder.append("null,");
-//        }else{
-//            stringBuilder.append("'");
-//            stringBuilder.append(userModel.getNickname());
-//            stringBuilder.append("',");
-//        }
-//        if(userModel.getRemark() == null){
-//            stringBuilder.append("null,");
-//        }else{
-//            stringBuilder.append("'");
-//            stringBuilder.append(userModel.getRemark());
-//            stringBuilder.append("',");
-//        }
-//        if(userModel.getLifeMotto() == null){
-//            stringBuilder.append("null,");
-//        }else{
-//            stringBuilder.append("'");
-//            stringBuilder.append(userModel.getLifeMotto());
-//            stringBuilder.append("',");
-//        }
-//        if(userModel.getImageUrl() == null){
-//            stringBuilder.append("null,'");
-//        }else{
-//            stringBuilder.append("'");
-//            stringBuilder.append(userModel.getImageUrl());
-//            stringBuilder.append("','");
-//        }
-//        stringBuilder.append(account);
-//        stringBuilder.append("')");
-//        
-//        return stringBuilder.toString();
-//        
-//    }
-//}

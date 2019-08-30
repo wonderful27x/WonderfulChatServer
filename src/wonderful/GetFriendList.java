@@ -25,8 +25,9 @@ import model.UserModel;
 import utils.DBCPUtils;
 
 /**
- *
- * @author Acer
+ * @Author wonderful
+ * @Description 好友列表
+ * @Date 2019-8-30
  */
 public class GetFriendList extends HttpServlet{
     
@@ -49,7 +50,7 @@ public class GetFriendList extends HttpServlet{
             
             connection = DBCPUtils.getConnection();
             statement = connection.createStatement();
-//            String querySql = "select * from " + CommonConstant.TABLE_FRIEND_LIST + " where foreignkey = '" + account + "'";
+    
             String querySql = buildSql(account);
             result = statement.executeQuery(querySql);
 
