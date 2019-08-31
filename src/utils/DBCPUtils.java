@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
@@ -24,11 +26,11 @@ public class DBCPUtils {
     private static final BasicDataSource dataSource = new BasicDataSource();
     
     static {
-        String url = "jdbc:mysql://localhost:3306/" + CommonConstant.DATABASE;
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        String url = "jdbc:mysql://localhost:3306/" + CommonConstant.DATABASE + "?useSSL=false&serverTimezone=UTC";
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl(url);
         dataSource.setUsername("root");
-        dataSource.setPassword("wonderful123456");
+        dataSource.setPassword("wonderful@123456");
         
         dataSource.setInitialSize(5);
         dataSource.setMaxTotal(450);          //#1 最大并发数，在同一时刻最多可以创建的连接数
@@ -63,6 +65,7 @@ public class DBCPUtils {
     }
     
     /**
+     * @throws java.sql.SQLException
     * @description 从池中获取一个连接
     * @return Connection
     */
@@ -75,7 +78,7 @@ public class DBCPUtils {
             try {
                 rs.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger(DBCPUtils.class.getName()).log(Level.SEVERE, null, e);
             }
         }
         
@@ -83,7 +86,7 @@ public class DBCPUtils {
             try {
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger(DBCPUtils.class.getName()).log(Level.SEVERE, null, e);
             }
         }
         
@@ -91,7 +94,7 @@ public class DBCPUtils {
             try {
                 conn.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger(DBCPUtils.class.getName()).log(Level.SEVERE, null, e);
             }
         }
     }

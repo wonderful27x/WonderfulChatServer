@@ -5,8 +5,6 @@
  */
 package wonderfulchat;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  *
  * @author Acer
