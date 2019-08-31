@@ -23,7 +23,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import wonderfulchat.ServletOnly;
 
 /**
  * @Author wonderful
@@ -72,7 +71,7 @@ public class Startup extends HttpServlet{
             out.println("threadPool size：" + threadPool.getPoolSize());
             out.println("thread number：" + threadPool.getActiveCount());
         } catch (IOException ex) {
-            Logger.getLogger(ServletOnly.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Startup.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -130,7 +129,7 @@ public class Startup extends HttpServlet{
                     threadPool.execute(connection);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ServerStart.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Startup.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

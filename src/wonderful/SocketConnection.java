@@ -103,6 +103,10 @@ public class SocketConnection implements Runnable{
         }
     }
 
+    /**
+     * 特别注意：里面的使用了带while循环的阻塞语句，
+     * 在switch中break和return具有特殊的用途，不能互换，否则会出现微妙的bug
+     */
     @Override
     public void run() {
         if(!initOk)return;
@@ -194,7 +198,6 @@ public class SocketConnection implements Runnable{
                             return;
                         }
                         if(friendSocket == null){
-                            //friendSocketKey = messageModel.getReceiverAccount() + "$" + messageModel.getSenderAccount();
                             friendSocket = hashMap.get(friendSocketKey);
                         }
                         if(friendSocket == null){
@@ -206,13 +209,14 @@ public class SocketConnection implements Runnable{
                     /** 
                      * 阶段五：
                      * client离开时主动请求关闭socket,server调用close,在阻塞的情况下，只有这种方法是安全的，
-                     * 但确是不可靠的，这里并没有真正的关闭socket，只是break,将最终的资源释放交给finally处理
+                     * 但确是不可靠的，这里并没有真正的关闭socket，只是break,将最终的资源释放交给finally处理,
+                     * 注意：这里必须使用return,不能使用break!
                      */
                     case SOCKET_CLOSE:
-                        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Bye!", "Bye!");
-                        break;
+                        //Logger.getLogger(SocketConnection.class.getName()).log(Level.SEVERE, "Bye!", "null");
+                        return;
                     default:
-                        break;
+                        return;
                 }
             }
         } catch (IOException ex) {

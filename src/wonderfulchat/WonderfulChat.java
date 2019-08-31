@@ -18,9 +18,6 @@ public class WonderfulChat {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        AtomicInteger count = new AtomicInteger(1);
-        System.out.println(count.getAndIncrement());
-        System.out.println(count.getAndIncrement());
     }
     
 }

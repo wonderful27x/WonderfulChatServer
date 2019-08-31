@@ -52,7 +52,7 @@ public class ChangeField extends HttpServlet{
             int rowsInSynchronize = statement.executeUpdate(buildSqlSynchronize);
             
             if(rowsInSynchronize <=0){
-                Logger.getLogger(ChangeField.class.getName()).log(Level.SEVERE, null, rowsInSynchronize);
+                //Logger.getLogger(ChangeField.class.getName()).log(Level.SEVERE, null, rowsInSynchronize);
             }
 
         } catch (IOException ex) {
