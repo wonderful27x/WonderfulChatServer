@@ -78,13 +78,11 @@ public class AddFriend extends HttpServlet{
                     removeRequest(friendAccount,account);
                     removeRequest(account,friendAccount);
                     out.print("exist");
-                    Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, "0", "");
                     break;
                 case 1:
                     //删除请求再添加请求，为解决A+B,B未处理，A-B,B同意，B+A，A收不到数据,AB为好友，A-B,B+A,A收不到数据
                     addRuquest(account,friendAccount);
                     out.print("exist");
-                    Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, "1", "");
                     break;
                 case 2:
                     if(addFriend(account,friendAccount)){
@@ -94,7 +92,6 @@ public class AddFriend extends HttpServlet{
                     }else{
                         out.print("fail");
                     }
-                    Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, "2", "");
                     break;
                 case 3:
                     if(addFriend(account,friendAccount)){
@@ -103,7 +100,6 @@ public class AddFriend extends HttpServlet{
                     }else{
                         out.print("fail");
                     }
-                    Logger.getLogger(AddFriend.class.getName()).log(Level.SEVERE, "3", "");
                     break;
                 case -1:
                     out.print("fail");
