@@ -17,10 +17,10 @@ public class CommonConstant {
    public static final String TABLE_FRIEND_LIST = "friendlist";
    public static final String TABLE_FRIEND_REQUEST = "friendrequest";
    
-   public static final String HOST = "http://114.55.252.175:8080/";
-   public static final String IMAGE_PATH = "C:\\VirtualDirectory\\image\\";
-   public static final String MESSAGE_PATH = "C:\\VirtualDirectory\\message\\";
-   public static final String FRIEND_REQUEST_PATH = "C:\\VirtualDirectory\\friendRequest\\";
+   public static final String HOST = "";
+   public static final String IMAGE_PATH = "D:\\VirtualDirectory\\image\\";
+   public static final String MESSAGE_PATH = "D:\\VirtualDirectory\\message\\";
+   public static final String FRIEND_REQUEST_PATH = "D:\\VirtualDirectory\\friendRequest\\";
    
    public static final String IDENTITY_REQUEST = "Who you are ?";
    public static final String ACCEPT = "Socket created !";
